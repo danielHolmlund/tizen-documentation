@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+	  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, target-densityDpi=device-dpi">
+    <meta name="description" content="Tizen Device API: Alarm" />
+    <title>Alarm API Tutorial</title>
+    <link rel="stylesheet" type="text/css" href="css/alarm.css" />
+  </head>
+  <body>
+    <article id="body-main">
+      <header>
+	<h2>
+	  <img src="images/tizen.png"> Alarm API Tutorial
+	</h2>
+      </header>
+      <section>
+	  <h2>Overview</h2>	
+	  <p class="desc">
+	    The Tizen Alarm API provides functionality for setting, getting and
+	    removing alarms. We can add two types of alarms to the storage.
+	    Alarm API allows you to schedule an application/service to be run
+	    at a specific time that you set. Each client application (widget)
+	    has its own alarm storage, meaning that they cannot see or edit
+	    alarms set by other applications. To use this API, add the
+	    required permissions to the
+	    <tt class="">config.xml</tt>
+	    file (see <a href="#prereq">prerequisites</a> section below). When
+	    the application is launched, an alarm object is instantiated
+	    automatically in the <tt class="">tizen</tt> object. The
+	    <tt class="">tizen.alarm</tt>
+	    object is an instance of the
+	    <tt class="">AlarmManager</tt>
+	    interface.
+	  </p>
+	  <p class="desc">
+	    <strong>Figure-1</strong> shows how the API objects are structured
+	    inside the application window.
+	  </p>
+	  <aside
+	     style="float: right; width: 35%; padding-left: 10px; align: center">
+	    <strong>Figure-1</strong> <img src="images/alarm.png"
+					   alt="alarm object" />
+	  </aside>
+	</section>
+      
+      <nav id="nav">
+	<ul id="nav-main-methods" class="main-menu" aria-hidden="true">
+	  <li id="nav-sub-add"><a href="#simplealarm">Create an alarm</a></li>
+	  <li id="nav-sub-addrecurring"><a href="#recurringalarm">Create
+	      a recurring alarm</a></li>
+	  <li id="nav-sub-schedule"><a href="#schedulealarm">Schedule
+	      a service</a></li>
+	  <li id="nav-sub-fetch"><a href="#fetchalarm">Fetch an alarm</a></li>
+	  <li id="nav-sub-fetchall"><a href="#fetchallalarms">Fetch
+	      all alarms</a></li>
+	  <li id="nav-sub-delete"><a href="#deletealarm">Delete an
+	      alarm</a></li>
+	  <li id="nav-sub-deleteall"><a href="#deleteallalarms">Delete
+	      all alarms</a></li>
+	  <li id="nav-sub-events"><a href="#alaemevents">Check for
+	      alarm events</a></li>
+	  <li id="nav-main-demos" role="menuitem"><a
+						     href="./demo/AlarmDemo.wgt" class="demos">Demo</a></li>
+	</ul>
+      </nav>
+      <div id="prereq">
+	<article>
+	  <h2>Prerequisites</h2>
+	  <section>
+	    <p class="desc">
+	      The Alarm API has different levels of access to handle system and
+	      sensitive data. You can enable different permissions for the Alarm
+	      API in the
+	      <tt class="">config.xml</tt>
+	      file. Open the
+	      <tt class="">config.xml</tt>
+	      file, choose the
+	      <tt>"Feature" </tt>
+	      tab, and check below features to enable them to use in your
+	      applications.
+	    </p>
+
+	    <ul id="refprereq" class="contentlist">
+	      <li class=" "><p>http://tizen.org/api/alarm: Privilege to
+		  allow access to all features of the Alarm API</p></li>
+	      <li class=" "><p>
+		  http://tizen.org/api/alarm.read: Privilege to allow access to
+		  the
+		  <tt class="">getAll()</tt>
+		  and
+		  <tt class="">get()</tt>
+		  method in the API
+	      </p></li>
+	      <li class=" "><p>
+		  http://tizen.org/api/alarm.write: Privilege to allow access to
+		  the entire API except the
+		  <tt class="">getAll()</tt>
+		  and
+		  <tt class="">get()</tt>
+		  method
+	      </p></li>
+	    </ul>
+
+	    <p class="desc">If you want to do it manually, add the
+	      following <tt class="">&lt;feature&gt;</tt> tag to the <tt class="">config.xml</tt> as shown below.</p>
+
+	    <div class="confbox programlisting">
+	      <div class="content">
+		<pre xml:space="preserve">
+		  <code>
+		    &lt;widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets" version="2.0 Beta" viewmodes="fullscreen" id="http://yourdomain/Call" &gt;
+		    &lt;icon src="icon.png"/&gt;  
+		    &lt;content src="index.html"/&gt;  
+		    &lt;name&gt;Application Name&lt;/name&gt; 
+		    <strong>
+		      &lt;feature name="http://tizen.org/api/alarm" required="true"&gt;  
+		      &lt;feature name="http://tizen.org/api/alarm.read" required="true"&gt;
+		      &lt;feature name="http://tizen.org/api/alarm.write" required="true"&gt;
+		    </strong>
+		    &lt;/widget&gt;</code>
+		</pre>
+	      </div>
+	    </div>
+
+	    <div class="info">It is recommended that you edit <tt class="">config.xml</tt> file by using the Tizen IDE interface.</div>
+
+	  </section>
+	</article>
+      </div>
+      <div id="simplealarm">
+	<a href="#body-main" id="top">Top</a>
+	<article>
+	  <h2>Create an alarm</h2>
+	  <section>
+	    <p class="desc">Create an instance of the Alarm interface, and use the
+	      <tt class="">tizen.alarm.add()</tt> method to add this alarm to the application storage. You must
+	      provide an application ID that has to be launched when the alarm is
+	      triggered.</p>
+	    
+	    <p class="desc">You can create an alarm in one of the following ways:</p>
+	    <ul class="contentlist">
+	      <li class=" ">
+		<p>By specifying the delay: The
+		  <tt class="">delay</tt> after which the alarm is triggered is specified as a
+		  parameter to the constructor of the <tt class="">AlarmRelative</tt> interface.</p>
+	      </li>
+	    </ul>
+	    <div class="programlisting">
+	      <div class="content">
+		<pre xml:space="preserve">
+		  <code>
+		    // Alarm in 3 hours from now 
+		    // PERIOD_HOUR =3600, number of seconds per hour 
+		    var alarm = new tizen.AlarmRelative(3 * tizen.alarm.PERIOD_HOUR); 
+		    tizen.alarm.add(alarm, "org.tizen.browser"); 
+		    console.log("Alarm added with id: " + alarm.id);</code>
+		</pre>
+	      </div>
+	    </div>
+	    <div class="info">Alarm identification (ID) is assigned
+	      automatically to the alarm when it is created.</div>
+
+	    <ul class="contentlist">
+	      <li class=" ">
+		<p>By specify the exact date/time: The
+		  <tt class="">Date/time</tt> at which the alarm need to trigger is specified as a <tt class="">Date</tt>
+		  object and passed as a parameter to the constructor of the
+		  <tt class="">AlarmAbsolute</tt> interface.</p>
+	      </li>
+	    </ul>
+	    <div class="confbox programlisting">
+	      <div class="content">
+		<pre xml:space="preserve">
+		  <code>
+		    var date = new Date(2012, 3, 4, 8, 0);
+		    var alarm = new tizen.AlarmAbsolute(date);
+		    tizen.alarm.add(alarm, "org.tizen.browser");
+		    console.log("Alarm added with id: " + alarm.id);</code>
+		</pre>
+	      </div>
+	    </div>
+
+	  </section>
+	</article>
+      </div>
+
+
+      <div id="recurringalarm">
+	<a href="#body-main" id="top">Top</a>
+	<article>
+	  <h2>Create a recurring alarm</h2>
+	  <section>
+	    <p class="desc">
+	      Using the
+	      <tt class=" ">AlarmAbsolute</tt>
+	      interface, you can set the
+	      <tt class=" ">date/time</tt>
+	      at which the alarm triggers and also set the
+	      <tt class=" ">period</tt>
+	      or
+	      <tt class=" ">daysOfTheWeek</tt>
+	      at which the alarm repeats. The alarm can be set to repeat every
+	      second, or every day of the week.
+	    </p>
+	    <p class="desc">
+	      To set up recurring alarm, specify the appropriate objects from
+	      the following list and pass them as parameters to the constructor
+	      of the
+	      <tt class=" ">AlarmAbsolute</tt>
+	      interface.
+	    </p>
+	    <ul class="contentlist">
+	      <li class=" ">
+		<p>
+		  <tt class=" ">date- </tt>
+		  Alarm triggers at the specified date
+		</p>
+	      </li>
+	      <li class=" ">
+		<p>
+		  <tt class=" ">period- </tt>
+		  Alarm keeps triggering at a given interval
+		</p>
+	      </li>
+	      <li class=" ">
+		<p>
+		  <tt class=" ">daysOfTheWeek- </tt>
+		  Alarm triggers every week, on the given days, at the time
+		  defined by date attribute
+		</p>
+	      </li>
+	    </ul>
+
+	    <div class="confbox programlisting">
+	      <div class="content">
+		<pre xml:space="preserve">
+		  <code>
+		    var date = new Date(2012, 0, 1, 8, 0);
+		    // Set an alarm on January 1st 2012 08:00 
+		    var alarm1 = new tizen.AlarmAbsolute(date);
+		    tizen.alarm.add(alarm1, "org.tizen.browser");
+		    // Set an alarm on January 1st 2012 08:00, repeating every 2 days
+		    var alarm2 = new tizen.AlarmAbsolute(date, 2 * tizen.alarm.PERIOD_DAY);
+		    tizen.alarm.add(alarm2, "org.tizen.browser");
+		    // Set an alarm occurring on every Saturday and Sunday, at 08:00, starting on January 1st 2012 
+		    var alarm3 = new tizen.AlarmAbsolute(date, ["SA", "SU"]); 
+		    tizen.alarm.add(alarm3, "org.tizen.browser");</code>
+		</pre>
+	      </div>
+	    </div>
+
+	    <div class="info">The parameters for period and days of the
+	      week are mutually exclusive.</div>
+
+	    <p class="desc">
+	      Using the
+	      <tt class=" ">AlarmRelative</tt>
+	      interface, you can set the
+	      <tt class=" ">delay</tt>
+	      after which the alarm triggers and specify the
+	      <tt class=" ">period</tt>
+	      after which it repeats.
+	    </p>
+	    <p class="desc">
+	      To create recurring alarm, specify the
+	      <tt class=" ">delay</tt>
+	      and
+	      <tt class=" ">period</tt>
+	      objects and pass them as parameters to the constructor of the
+	      <tt class=" ">AlarmRelative</tt>
+	      interface.
+	    </p>
+	    <div class="confbox programlisting">
+	      <div class="content">
+		<pre xml:space="preserve">
+		  <code>
+		    // Set an alarm in 3 hours from now
+		    var alarm1 = new tizen.AlarmRelative(3 * tizen.alarm.PERIOD_HOUR);
+		    tizen.alarm.add(alarm1, "org.tizen.browser");
+		    // Set an alarm in one hour and recurring every 2 minutes afterwards 
+		    // PERIOD_MINUTE =60, number of seconds per minute 
+		    var alarm2 = new tizen.AlarmRelative(tizen.alarm.PERIOD_HOUR, 2 * tizen.alarm.PERIOD_MINUTE);
+		    tizen.alarm.add(alarm2, "org.tizen.browser");</code>
+		</pre>
+	      </div>
+	  </section>
+	</article>
+	</div>
+
+	<div id="schedulealarm">
+	  <a href="#body-main" id="top">Top</a>
+	  <article>
+	    <h2>Schedule a service</h2>
+	    <section>
+	      <p class="desc">Using the <tt class=" ">tizen.alarm.add()</tt> method, you can  specify a service that has to be launched when the alarm is triggered.</p>
+
+	      <div class="confbox programlisting">
+		<div class="content">
+		  <pre xml:space="preserve">
+		    <code>
+		      var alarm = new tizen.AlarmRelative(10);
+		      var service = new tizen.ApplicationService("http://tizen.org/appsvc/operation/view","http://www.tizen.org");
+		      tizen.alarm.add(alarm, "org.tizen.browser", service);
+		      console.log("Alarm added with id: " + alarm.id);</code>
+		  </pre>
+		</div>
+	      </div>
+	      <div class="info">To use any of the <tt class=" ">ApplicationService</tt> features, you must declare the necessary features in the <tt class="">config.xml</tt> file.</div>
+	    </section>
+	  </article>
+	</div>
+
+	<div id="fetchalarm">
+	  <a href="#body-main" id="top">Top</a>
+	  <article>
+	    <h2>Fetch an alarm</h2>
+	    <section>
+	      <p class="desc">Using the <tt class=" ">tizen.alarm.get()</tt> method, you can obtain an 
+		alarm object from application storage based on the <tt class=" ">alarm ID</tt>.</p>
+	      <div class="confbox programlisting">
+		<div class="content">
+		  <pre xml:space="preserve">
+		    <code>
+		      //create and add alarm to the storage.
+		      var date = new Date(2013, 0, 20, 15, 25);
+		      var alarm = new tizen.AlarmAbsolute(date);
+		      tizen.alarm.add(alarm, "org.tizen.clock"); 
+		      console.log("Alarm added with id: " + alarm.id );
+		      
+		      //Get the alarm with given id from storage.
+		      var getalarm = tizen.alarm.get(alarm.id);</code>
+		  </pre>
+		</div>
+	      </div>
+	    </section>
+	  </article>
+	</div>
+
+	<div id="fetchallalarms">
+	  <a href="#body-main" id="top">Top</a>
+	  <article>
+	    <h2>Fetch all alarms</h2>
+	    <section>
+	      <p class="desc">Using the <tt class=" ">tizen.alarm.getAll()</tt> method, you can obtain an array
+		of all the alarms that have been set on a device, but Alarms that
+		have already been triggered are not displayed in the list.</p>
+	      <div class="confbox programlisting">
+		<div class="content">
+		  <pre xml:space="preserve">
+		    <code>
+		      var alarms = tizen.alarm.getAll();
+		      console.log(alarms.length + " alarms present in the storage.");</code>
+		  </pre>
+		</div>
+	      </div>
+	      <div class="info">Alarms that have already been triggered are removed automatically from the storage.</div>
+	    </section>
+	  </article>
+	</div>
+
+	<div id="deletealarm">
+	  <a href="#body-main" id="top">Top</a>
+	  <article>
+	    <h2>Delete an alarm</h2>
+	    <section>
+	      <p class="desc">Using the <tt class=" ">tizen.alarm.remove()</tt> method, you can remove an alarm that was earlier created on a device.
+		You must provide the ID of the alarm to remove.</p>
+	      <div class="confbox programlisting">
+		<div class="content">
+		  <pre xml:space="preserve">
+		    <code>
+		      var date = new Date(2013, 0, 1, 8, 0); 
+		      // Set an alarm on January 1st 2013 08:00
+		      var alarm1 = new tizen.AlarmAbsolute(date);
+		      tizen.alarm.add(alarm1, "org.tizen.browser");
+		      tizen.alarm.remove(alarm1.id);</code>
+		  </pre>
+		</div>
+	      </div>
+	    </section>
+	  </article>
+	</div>
+
+	<div id="deleteallalarms">
+	  <a href="#body-main" id="top">Top</a>
+	  <article>
+	    <h2>Delete all alarms</h2>
+	    <section>
+	      <p class="desc">Using the <tt class=" ">tizen.alarm.removeAll()</tt> method, you can remove all the alarms that are added by the calling application</p>
+	      <div class="confbox programlisting">
+		<div class="content">
+		  <pre xml:space="preserve"><code>
+		      var date = new Date(2013, 0, 31, 11, 0);
+		      // Set an alarm on January 31st 2013 11:00
+		      var alarm1 = new tizen.AlarmAbsolute(date);
+		      tizen.alarm.add(alarm1, "org.tizen.browser");
+		      tizen.alarm.removeAll();
+
+		      //get the alarm count.
+		      var alaarray = tizen.alarm.getAll();
+		      console.log(alaarray.length + " alarms present in the storage.");</code>
+		  </pre>
+		</div>
+	      </div>
+
+	    </section>
+	  </article>
+	</div>
+
+	<div id="alaemevents">
+	  <a href="#body-main" id="top">Top</a>
+	  <article>
+	    <h2>Check for alarm events</h2>
+	    <section>
+	      <p class="desc">For <tt class=" ">AlarmAbsolute</tt> interface, you can use the
+		<tt class=" ">getNextScheduledDate()</tt> method to retrieve the <tt class=" ">Date</tt> object of the
+		next scheduled alarm for the alarm object.</p>
+	      <div class="confbox programlisting">
+		<div class="content">
+		  <pre xml:space="preserve"><code>
+		      var alarm = new tizen.AlarmAbsolute(new Date(2012, 3, 4, 8, 0));
+		      tizen.alarm.add(alarm, "org.tizen.browser");
+		      console.log("The alarm will trigger at " + alarm.getNextScheduledDate());</code>
+		  </pre>
+		</div>
+	      </div>
+	      <div class="info">This method can be used to retrieve next schedules of
+		recurring alarms only.</div>
+
+	      <p class="desc">For <tt class=" ">AlarmRelative</tt> interface, you can use the
+		<tt class=" ">getRemainingSeconds()</tt> method to get the <tt class=" ">duration in seconds</tt> before the next
+		scheduled alarm for the alarm object.</p>
+	      <div class="confbox programlisting">
+		<div class="content">
+		  <pre xml:space="preserve"><code>
+		      //Alarm in 3 hours var alarm = new tizen.AlarmRelative (3 * tizen.alarm.PERIOD_HOUR);
+		      tizen.alarm.add(alarm, "org.tizen.browser");
+		      console.log("The alarm will trigger " + alarm.getRemainingSeconds() + " later”);</code>
+		  </pre>
+		</div>
+	      </div>
+	      <div class="info">If the alarm expired, <tt class=" ">getRemainingSeconds()</tt> method will return null. </div>
+	    </section>
+	  </article>
+	</div>
+
+	<footer>&copy; 2012 Intel Co., Ltd. All rights reserved.</footer>
+      </div>
+  </body>
+</html>

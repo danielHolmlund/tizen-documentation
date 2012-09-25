@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, target-densityDpi=device-dpi">
+<meta name="description" content="Tizen Device API: Alarm" />
+<title>Call API Tutorial</title>
+<link rel="stylesheet" type="text/css" href="css/Call.css" />
+</head>
+<body>
+	<header>
+		<h2>
+			<img src="images/tizen.png"> Call Device API Tutorial
+		</h2>
+	</header>
+	<article>
+		<h2>Overview</h2>
+		<section>
+			<p class="desc">The Tizen Call API provides the interfaces and
+				methods for accessing information about various telephony services
+				for Circuit Switched Telephony and Voice over IP (VoIP). You can use
+				the Call API to monitor information such as the current state of the
+				device. In addition, the methods can be used to notify your web
+				applications for any changes in the call history. The Call API
+				provides different levels of access to retrieve information about a
+				device’s telephony services. To use this API, add the required
+				permissions to the config.xml file. When the application is
+				launched, a call object is instantiated automatically in the tizen
+				object. The tizen.call object is an instance of the CallManager
+				interface, which retrieves information about the current state of
+				the device.</p>
+			<p class="desc">
+				<strong>Figure-1</strong> shows how the API objects are structured
+				inside the application window.
+			</p>
+			<aside
+				style="float: right; width: 35%; padding-left: 10px; align: center">
+				<strong>Figure-1</strong> <img src="images/call.png"
+					alt="call object" />
+			</aside>
+		</section>
+	</article>
+	<a name="TOC"></a>
+	<nav id="nav">
+		<ul id="nav-main-methods" class="main-menu" aria-hidden="true">
+			<li id="nav-sub-add"><a href="#STATUS">Check Call Status</a></li>
+			<li id="nav-sub-add"><a href="#HISTORY">Request for call
+					history entries</a></li>
+			<li id="nav-sub-addrecurring"><a href="#REMOVE">Remove a
+					call history entry</a></li>
+			<li id="nav-sub-schedule"><a href="#REMOVEBATCH">Remove
+					multiple calls (Batch mode)</a></li>
+			<li id="nav-sub-fetch"><a href="#REMOVEALL">Remove all calls
+					history entries</a></li>
+			<li id="nav-sub-fetchall"><a href="#DELETERECORD">Remove the
+					recorded media (Relative to call history)</a></li>
+			<li id="nav-sub-delete"><a href="#REGISTER">Register to
+					listen Call history changes</a></li>
+			<li id="nav-sub-deleteall"><a href="#UNREGISTER">Unregister
+					a listener to Call history changes</a></li>
+			<li id="nav-sub-deleteall"><a href="#HANDLECHANGES">Handle
+					Changes to Call History</a></li>
+		</ul>
+	</nav>
+	<a name="PREREQ"></a>
+	<article>
+		<h2>Prerequisites</h2>
+		<section>
+			<p class="desc">
+				To use any of the Call's features, you must declare the necessary
+				features in the
+				<tt class="">config.xml</tt>
+				file. It is recommended that you do it using the SDK interface. In
+				the case of this example, the
+				<tt class="">call.state</tt>
+				file and
+				<tt class="">call.history</tt>
+				features are needed. Open the
+				<tt class="">config.xml</tt>
+				file, choose the "Feature" tab, and add below features to enable
+				them to use in your applications.
+
+			</p>
+			<ul id="refprereq" class="contentlist">
+				<li class=" "><p>http://tizen.org/api/call: Privilege to allow the
+					use of the full functionalities of the Call. API access policy is
+					defined by the implementation or deployment.</p></li>
+				<li class=" "><p>http://tizen.org/api/call.state: Privilege to
+					allow the use of tizen.call.isCallInProgress methods.</p></li>
+				<li class=" "><p>http://tizen.org/api/call.history: Privilege to
+					allow the use of the call history functionality through the
+					tizen.call.history object corresponding to the CallHistory
+					interface.</p></li>
+				<li class=" "><p>http://tizen.org/api/call.history.read: Privilege
+					to allow read access to call history.</p></li>
+				<li class=" "><p>http://tizen.org/api/call.history.write:
+					Privilege to allow write access to call history, including
+					CallHistoryEntry, remove(), removeBatch(), removeAll() and
+					deleteRecording().</p></li>
+			</ul>
+			<p class="desc">
+				Finally add http://tizen.org/api/tizen.</br> If you want to do it
+				manually, add the following &lt;feature&gt; tag to the file as
+				below,
+			</p>
+
+			<div class="confbox programlisting">
+				<div class="content">
+					<pre xml:space="preserve">
+						<code>
+&lt;widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets" version="2.0 Beta" viewmodes="fullscreen" id="http://yourdomain/Call" &gt;
+	&lt;icon src="icon.png"/&gt;  
+	&lt;content src="index.html"/&gt;  
+	 
+	&lt;feature name="http://tizen.org/api/call" required="true"/&gt;  
+	&lt;feature name="http://tizen.org/api/call.history" required="true"/&gt;  
+	&lt;feature name="http://tizen.org/api/call.history.read" required="true"/&gt;  
+	&lt;feature name="http://tizen.org/api/call.history.write" required="true"/&gt;  
+	&lt;feature name="http://tizen.org/api/call.state" required="true"/&gt;  
+
+	&lt;feature name="http://tizen.org/api/application.read" required="true"/&gt;
+
+	&lt;feature name="http://tizen.org/api/tizen" required="true"/&gt;  
+	&lt;name&gt;Call&lt;/name&gt;
+&lt;/widget&gt;     </code>
+				  </pre>
+				</div>
+			</div>
+
+			<div class="info">Since the application will contain the Exit
+				button, it will need the quitting functionality. To provide it, add
+				the application.read feature.</div>
+		</section>
+	</article>
+
+	<a name="STATUS"></a>
+	<div>
+		<a href="#TOC" id="top">Top</a>
+		<article>
+			<h2>Check Call Status</h2>
+			<section>
+				<p class="desc">
+					The Call API provides the CallManager interface to check the status
+					of an in-progress call. Use
+					<tt class="">isCallInProgress</tt>
+					to check, if a call in progress: You can use the
+					<tt class="">CallManager.isCallInProgress</tt>
+					method to inquire if there is a call in progress. The method type
+					is boolean, which returns true if there is at least one call in the
+					following states: active, held, dialing, alerting, incoming, or
+					waiting. This method returns false if there is no call in any of
+					the specified states.
+				</p>
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code>
+Example code:
+
+function CheckCallStatus(){
+   try {
+    var status = tizen.call.isCallInProgress();
+    console.log("Current call status : " + status);
+    // if true , a call in progress
+    if (status){
+    	alert("call status : Active call");
+    }else{
+    	alert("call status : No active call");
+    }           
+   } 
+   catch(error) {
+    console.log('The following error occurred: ' + error.name);
+   }
+}
+
+                       </code>
+					</pre>
+					</div>
+				</div>
+				<img src="images/CallProgress.png"</img>
+				<p class="desc">Fig 2. When checked for in call progress status
+					(When no call)</p>
+
+			</section>
+		</article>
+	</div>
+
+	<a name="HISTORY"></a>
+	<div>
+		<a href="#TOC" id="top">Top</a>
+		<article>
+			<h2>Request for call history entries</h2>
+			<section>
+				<p class="desc">
+					The CallHistory interface is used to manage call history. This
+					interface stores data about all incoming and outgoing calls,
+					including the date and time of all calls. The
+					<tt class="">CallHistoryEntry</tt>
+					interface is used to represent a call that was made or received.
+					The call history data that is fetched from the system through the
+					CallHistory interface is represented as entries using the
+					<tt class="">CallHistoryEntry</tt>
+					interface. This interface provides methods for various operations,
+					such as finding call history items, removing call history items,
+					removing a list of call history items, removing the entire call
+					history, delete a recording of a corresponding call history item
+					and listening to the call history changes.
+				</p>
+				</br>
+				<p class="desc">
+					Begin by defining a function that will be executed when "Call
+					History" button is clicked. To request for the call history, you
+					need to use
+					<tt class="">tizen.call.history.find()</tt>
+					function. This function is asynchronous and takes 6 parameters. Two
+					first parameters are callback functions (the first one to be
+					executed in case of success, the second - in case of failure).
+					Other parameters are filter for filter definition and sortMode for
+					sort options and limit and offset. Result of call history request
+					in case of success will be returned to the callback function as an
+					array of
+					<tt class="">CallHistoryEntry</tt>
+					objects. The following is the parameters of the
+					<tt class="">tizen.call.history.find()</tt>
+					method. The SuccessCallback parameter is a handler for query result
+					set. It appends the entry in the call history if a call history
+					item is found.
+				</p>
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code>
+					      
+    function onSuccess(results) {
+    console.log(results.length + " call history item(s) found!");
+    for (var i=0; i&lt;results.length;i++) {
+        console.log(i + ". " + results[i].toString());
+        // process the CallHistoryEntry
+            }
+         }
+                       </code>
+					</pre>
+					</div>
+				</div>
+
+				<p class="desc">The errorCallback parameter reports failure on
+					error.</p>
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code>
+function onError(error) {
+    console.log ("Query failed" + error.name);
+}
+                       </code>
+					</pre>
+					</div>
+				</div>
+
+				<p class="desc">
+					The filter parameter is of
+					<tt class="">AttributeFilter</tt>
+					type and is used to define which call history results you are
+					interested in. In the case of this tutorial, you want to show only
+					telephone calls (not video calls or VOIP calls). To do this, you
+					set filter's attributeName to "callType", matchValue to "tizen.tel"
+					and matchFlag to "EXACTLY". It means you want to choose only those
+					CallHistoryEntry items, whose callType attriburte has a value
+					"tizen.tel". Please refer to filter documentation for general
+					information on filters usage and CallHistoryEntry documentation for
+					information on other call record attributes which may be useful,
+					when creating your own filter.
+				</p>
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code>
+var filter = new tizen.AttributeFilter("callType", "EXACTLY", "tizen.tel");
+                             </code>
+						</pre>
+					</div>
+				</div>
+
+				<p class="desc">
+					The
+					<tt class="">AbstractFilter</tt>
+					parameter may be used to search according to CallHistoryEntry
+					interface parameters, for example callType, tags and so on. In the
+					following example, remoteParties.remoteParty is an attribute name,
+					the match value 123456789 is a telephone number to be matched, and
+					the match flag is EXACTLY.
+				</p>
+
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code>
+var numberfilter = new tizen.AttributeFilter("remoteParties.remoteParty",
+                                             "EXACTLY",
+                                             "123456789");
+                             </code>
+						</pre>
+					</div>
+				</div>
+
+
+				<p class="desc">
+					The
+					<tt class="">CompositeFilter</tt>
+					parameter represents a set of filters. The UNION type composite
+					filter matches any object that is matched by any of its filters;
+					the INTERSECTION type composite filter matches all objects that are
+					matched by all of its filters.
+				</p>
+
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code>
+              
+// create a composite filter for time constraints
+var y2009Filter = new tizen.AttributeRangeFilter("startTime", 
+                                                 new Date(2009, 0, 1),
+                                                 new Date(2010, 0, 1));
+ 
+var y2011Filter = new tizen.AttributeRangeFilter("startTime",
+                                                 new Date(2011, 0, 1),
+                                                 new Date(2012, 0, 1) );
+ 
+// create composite filter
+var datefilter = new tizen.CompositeFilter("UNION",
+                                           [y2009Filter, y2011Filter]);
+ 
+var tfilter = new tizen.AttributeFilter("tags", "EXACTLY", "call.video");
+ 
+var ifilter = new tizen.CompositeFilter("INTERSECTION", [numberFilter, dateFilter, tfilter]);
+
+               </code>
+						</pre>
+					</div>
+				</div>
+
+				<p class="desc">
+					The
+					<tt class="">sortMode</tt>
+					parameter is of SortMode type and defines how the results will be
+					sorted. The usage of
+					<tt class="">sortMode</tt>
+					is similar to filters: you decide which attribute of
+					CallHistoryEntry item will be the key for sorting and which order
+					you want to be used. In the case of this tutorial, results will be
+					sorted descending by the time when call occurred (the latest calls
+					on top). To do this you set the sortMode's attributeName to
+					"startTime" and order to "DESC". Please refer to
+					<tt class="">sortMode</tt>
+					documentation for more information about sorting and
+					CallHistoryEntry documentation for information on other call record
+					attributes which may be useful when creating your own sorting.
+
+					Below example sorts the calls according to the start time, in
+					descending order.
+				</p>
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code>
+var sortMode = new tizen.SortMode("startTime", "DESC"};
+                             </code>
+						</pre>
+					</div>
+				</div>
+
+				<p class="desc">
+					If you set the attribute name of
+					<tt class="">sortMode</tt>
+					to
+					<tt class="">startTime</tt>
+					and order to DESC, the results are sorted in the descending order
+					according to the time when the call occurred (the latest calls are
+					on top).
+				</p>
+
+				<ul class="contentlist">
+					<li class=" ">
+						<p>The limit parameter allows you to specify the maximum
+							number of matching results that are to be returned. Setting this
+							to 0 makes the limit infinite.</p>
+					</li>
+				</ul>
+
+
+				<ul class="contentlist">
+					<li class=" ">
+						<p>The offset parameter is used to skip that many matching
+							results that are to be returned; offset 0 is the same as omitting
+							the offset clause.</p>
+					</li>
+				</ul>
+
+				<p class="desc">For example, if your search results consist of
+					100 matching results, and if you have specified an offset of 10 and
+					a limit of 20, then from the 100 matching results, you get the
+					objects from 10-29. The matching results from 0-9 are skipped.
+					Offset is the starting point to begin-lower limit, and limit is the
+					upper limit from offset.</p>
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code>
+// Make the query and wire up the callbacks
+tizen.call.history.find(onSuccess, onError, ifilter, sortMode, 20, 10);
+                             </code>
+						</pre>
+					</div>
+				</div>
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code>
+Example code:
+
+ //Define success callback
+function onSuccess(results) {
+      
+       alert(results.length + " call history item(s) found!");       
+}
+ 
+// Define error callback
+function onError(error) {
+       alert("Query failed " + error.code);
+}
+ 
+//get the call history
+function showCallHistory() {
+       console.log("Generating call history");
+   // Define filter: list CS calls, most recent first
+   var filter = new tizen.AttributeFilter("callType", "EXACTLY", "tizen.tel");
+ 
+   // Define sort mode: descending on call start time.
+   var sortMode = new tizen.SortMode("startTime", "DESC");
+ 
+   // Make the query and wire up the callbacks
+   try{
+      tizen.call.history.find(onSuccess, onError, filter, sortMode); // Limits can be used,when displaying the list
+   } catch(err){
+         console.log("Error: Find failed: " + err.code + ":" + err.message);
+   }
+ }
+
+                           </code>
+						</pre>
+					</div>
+				</div>
+
+			</section>
+		</article>
+	</div>
+
+	<a name="REMOVE"></a>
+	<div>
+		<a href="#TOC" id="top">Top</a>
+		<article>
+			<h2>Remove a call history entry</h2>
+			<section>
+				<p class="desc">
+					The
+					<tt class="">tizen.call.history.remove</tt>
+					method can be used to remove an entry from the call history. This
+					method takes a specific call history entry to be deleted. The
+					following example illustrates how to remove a specified call entry
+					with a single line of code, using the remove method.
+				</p>
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code>
+                 
+Example code:
+ 
+//Define success callback
+function onSuccessRemove(callList) {
+       if (callList.length > 0) {
+              tizen.call.history.remove(callList[0]);
+              alert("Removed 1 item");
+       } else {
+              alert("No call history items found");
+       }
+}
+// Define error callback
+function onErrorRemove(error) {
+       alert("Query failed" + error.code);
+}
+ 
+// Function to remove a log
+function RemoveCallLog()
+{
+// Make the query and wire up the callbacks
+tizen.call.history.find(onSuccessRemove, onErrorRemove);
+}
+                           </code>
+						</pre>
+					</div>
+				</div>
+
+			</section>
+		</article>
+	</div>
+
+	<a name="REMOVEBATCH"></a>
+	<div>
+		<a href="#TOC" id="top">Top</a>
+		<article>
+			<h2>Remove multiple calls (Batch mode)</h2>
+			<section>
+				<p class="desc">
+					If you want to remove multiple call history entries, you can either
+					use the
+					<tt class="">tizen.call.history.remove</tt>
+					method multiple times or the
+					<tt class="">CallHistory.removeBatch</tt>
+					method. The removeBatch method takes a list of call history items
+					to be removed as a parameter instead of a single entry. Hence, this
+					is an efficient approach to asynchronously delete a list of call
+					history entries. The following example illustrates how to remove
+					multiple call entries with a single line of code, using the
+					removeBatch method.
+				</p>
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code>
+ Example code:
+ 
+//Define success callback
+function onSuccess(results) {
+       function removeBatchSuccess() {
+              alert("Success remove " + results.length + " items");
+       }
+       function removeBatchError() {
+              alert("Exception : " + error.code);
+       }
+       if (results.length > 0) {
+              tizen.call.history.removeBatch(results, removeBatchSuccess, removeBatchError);
+       } else {
+              alert("No call history items found");
+       }
+}
+// Define error callback
+function onError(error) {
+       alert("Query failed" + error.code);
+}
+// Use filters to create a batch and pass the items for removal from call history
+function RemoveBatchEntries() {
+   // Make the query and wire up the callbacks
+   tizen.call.history.find(onSuccess, onError);
+}
+					        </code>
+						</pre>
+					</div>
+				</div>
+			</section>
+		</article>
+	</div>
+
+	<a name="REMOVEALL"></a>
+	<div>
+		<a href="#TOC" id="top">Top</a>
+		<article>
+			<h2>Remove all calls history entries</h2>
+			<section>
+				<p class="desc">
+					The
+					<tt class="">CallHistory.removeAll</tt>
+					method deletes all call history items. This method accepts the
+					following parameters:
+				</p>
+
+				<ul class="contentlist">
+					<li class=" ">
+						<p>successCallback is a generic success handler.</p>
+					</li>
+				</ul>
+
+				<ul class="contentlist">
+					<li class=" ">
+						<p>errorCallback is an error handler..</p>
+					</li>
+				</ul>
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code>
+
+Example code:
+
+//***************************
+//  removeAll method usage
+//***************************
+ 
+//Define error callback
+function onError(error) {
+       alert("Query failed" + error.code);
+}
+function onSuccess() {
+    alert("Call log cleared successfully");
+ }
+function onSuccessFind(list) {
+      
+       if (list.length > 0) {
+       try{
+            tizen.call.history.removeAll(onSuccess, onError);
+          } catch (err) {
+                onError(err);
+          }
+        } else {
+               alert("No call history items found");
+        }
+}
+ 
+function removeAllCallHistory() {
+              // Make the query and wire up the callbacks
+       tizen.call.history.find(onSuccessFind, onError);
+                    
+  }	        </code>
+						</pre>
+					</div>
+				</div>
+
+			</section>
+		</article>
+	</div>
+
+	<a name="DELETERECORD"></a>
+	<div>
+		<a href="#TOC" id="top">Top</a>
+		<article>
+			<h2>Remove the recorded media (Relative to call history)</h2>
+			<section>
+				<p class="desc">Use the CallHistory.deleteRecording method to
+					delete any recorded media associated with a call history item. This
+					method is asynchronous, and it uses the historyEntry parameter to
+					specify the call history item to be modified. If the
+					CallHistoryEntry has a valid record ID, the media is deleted from
+					the storage and the field is set to NULL. If the record ID is NULL
+					or invalid, the error callback is called.</p>
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code>
+Example code:
+
+//**********************************
+// removeRecordedMedia method usage
+//**********************************
+function onSuccessList(results) {
+              function onSuccess() {
+                       alert("Item successfully removed");
+              }
+ 
+              function onError(error) {
+                       alert("Item removal failure" + error.code);
+              }
+              if(results.length > 0) {
+                  try {
+                       // calling deleteRecording here
+                         tizen.call.history.deleteRecording(results[0], onSuccess, onError);
+                  } catch (err) {
+                           onError(err);
+                  }
+              } else {
+                      alert("There is no media to remove");
+              }
+       }
+ 
+function removeRecordedMedia() {
+//Make the query and wire up the callbacks
+  try {
+         tizen.call.history.find(onSuccessList, onError);
+   } catch (err) {
+         onError(err);
+   }
+}
+ 	</code>
+						</pre>
+					</div>
+				</div>
+
+			</section>
+		</article>
+	</div>
+
+	<a name="REGISTER"></a>
+	<div>
+		<a href="#TOC" id="top">Top</a>
+		<article>
+			<h2>Register to listen Call history changes</h2>
+			<section>
+				<p class="desc">Any change made to the call history is an event.
+					Registering listeners allows you to define callbacks to be executed
+					every time an event occurs. Whenever a specific event occurs within
+					the object, that is, any change occurs, all handlers are invoked.
+
+					You can use the CallHistory.addListener method to register a
+					callback for observing CallHistory changes. This method accepts a
+					CallHistoryChangeCallback object, which defines 2 handlers, onadded
+					and onchanged, to handle the events for additions and updates to
+					the call history, respectively. The return value of the addListener
+					method is a handle that can be used for unregistering. The
+					following example illustrates how to use the CallHistory.
+					addListener method.</p>
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code> 
+
+Example code:
+
+//******************************
+// addListener method usage
+//******************************
+ 
+//  Callback handlers for a change or new item in call history.
+var onCallHistoryChange = {
+              onadded: function(newItems) {
+                           alert("New item added");
+                     for ( var i = 0; i < newItems.length; i++) {
+                           alert("Item " + i + "startTime: " + newItems[i].startTime);
+                     }
+ 
+              },
+              onchanged: function(changedItems) {
+                           alert("Items changed");
+                     for ( var i = 0; i < changedItems.length; i++) {
+                           alert("Item " + i + "direction: " + changedItems[i].direction);
+                     }
+              }
+       };
+ 
+       function registerCallbackCallHistory() {
+             
+              //Define error callback
+              function onError(error) {
+                     alert("Callback Registration failed" + error.code);
+              }
+       try {
+       // You can call the tizen.call.history.addListener method by using the following statement:
+                     callHistoryListener = tizen.call.history.addListener(onCallHistoryChange);
+                          alert("Notification added");
+              } catch (err) {
+                     onError(err);
+              }
+       }                  </code>
+						</pre>
+					</div>
+				</div>
+
+				<div class="info">This method returns a handler ID after a
+					successful callback registration.</div>
+			</section>
+		</article>
+	</div>
+
+	<a name="UNREGISTER"></a>
+	<div>
+		<a href="#TOC" id="top">Top</a>
+		<article>
+			<h2>Unregister a listener to Call history changes</h2>
+			<section>
+				<p class="desc">You can use the CallHistory.removeListener
+					method to unregister a previously registered listener. This method:</p>
+
+				<ul class="contentlist">
+					<li class=" ">
+						<p>Uses the handle parameter, which has been previously
+							obtained from addListener.</p>
+					</li>
+				</ul>
+				<ul class="contentlist">
+					<li class=" ">
+						<p>Deletes the listener object returned by addListener</p>
+					</li>
+				</ul>
+				<p class="desc">You need to use the ID returned by the
+					tizen.call.history.addListener method. The following example
+					illustrates how to use an ID returned by the
+					tizen.call.history.addListener method:</p>
+
+				<div class="confbox programlisting">
+					<div class="content">
+						<pre xml:space="preserve">
+							<code> 
+Example code:
+ 
+// Creating a handler to listen call history changes
+callHistoryListener = tizen.call.history.addListener(onCallHistoryChange);
+ 
+//Remove the previously registered handler using below method
+tizen.call.history.removeListener(callHistoryListener);	
+                              </code>
+						</pre>
+					</div>
+				</div>
+				<div class="info">This method takes the ID as the parameter,
+					which was returned from earlier registration.</div>
+			</section>
+		</article>
+	</div>
+
+	<a name="HANDLECHANGES"></a>
+	<div>
+		<a href="#TOC" id="top">Top</a>
+		<article>
+			<h2>Handle Changes to Call History</h2>
+			<section>
+				<p class="desc">The CallHistoryChangeCallback interface is used
+					to define callbacks for handling changes in the call history.
+					Registering change listeners allows you to synchronize the view of
+					your application to changes in the call history database.</p>
+
+				<ul class="contentlist">
+					<li class=" ">
+						<p>Addition of a New Call History Item.</p>
+					</li>
+				</ul>
+				<p class="desc">By defining an onadded handler of the
+					CallHistoryChangeCallback interface, you can keep track of new
+					calls made. The onadded method is a convenient callback method to
+					keep track of any new incoming and outgoing call that has been
+					added to the call history. An array of CallHistoryEntry objects
+					representing the new items added to the call history is passed as
+					an argument to the onadded handler.</p>
+				<ul class="contentlist">
+					<li class=" ">
+						<p>Changes to a Call History Item</p>
+					</li>
+				</ul>
+				<p class="desc">
+					The onchanged handler of the CallHistoryChangeCallback interface is
+					a callback method for handling changes to CallHistory items. You
+					can use this method to keep track of any changes or updates that
+					have been made to the call history. An array of CallHistoryEntry
+					objects representing the changed items in the call history is
+					passed to the onchanged handler.</br> Refer example code under
+					AddListener method.
+				</p>
+			</section>
+		</article>
+	</div>
+
+	<footer>&copy; 2012 Intel Co., Ltd. All rights reserved.</footer>
+
+</body>
+</html>

@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, target-densityDpi=device-dpi">
+<meta name="description" content="Tizen Device API: Time" />
+<title>Time API Tutorial</title>
+<link rel="stylesheet" type="text/css" href="css/time.css" />
+</head>
+<body>
+	<div id="body-main">
+		<header>
+			<h2>
+				<img src="images/tizen_32.png"> Time API Tutorial
+			</h2>
+		</header>
+		<article>
+			<h2>Overview</h2>
+			<section>
+				<p class="desc">
+					The Tizen
+					<code>Time</code>
+					API supports the use of locale-specific calendar features by
+					allowing your application to retrieve the current local time for a
+					given date.
+					<code>Time</code>
+					API allows you to set a date and time for a particular time zone.
+					Facilitates converting one time zone to another. For a given date,
+					you can perform calculations to convert local time to any date in
+					the past, present, or future and also handle daylight saving time
+					(DST) information. To use this API, add the required permissions to
+					the
+					<code>config.xml</code>
+					file (see <a href="#prereq">prerequisites</a> section below). When
+					the application is launched, a time object is instantiated
+					automatically in the tizen object. The
+					<code>tizen.time</code>
+					object is an instance of the
+					<code>TimeUtil</code>
+					interface, which provides date, time, and time zone management
+					features.
+				</p>
+				<p class="desc">Figure below shows how the API objects are
+					structured inside the application window.</p>
+				<aside
+					style="float: right; width: 35%; padding-left: 10px; align: center">
+					<figure>
+						<img src="images/time_feature.png" alt="Time object" />
+						<figcaption>
+							<strong>Time Object</strong>
+						</figcaption>
+					</figure>
+				</aside>
+			</section>
+		</article>
+
+		<nav id="nav">
+			<ul id="nav-main-methods" class="main-menu" aria-hidden="true">
+				<li id="nav-sub-get"><a href="#getdatetime">Get current
+						date and time</a></li>
+				<li id="nav-sub-set"><a href="#setdatetime">Create and set
+						new date and time</a></li>
+				<li id="nav-sub-timezone"><a href="#timezone">Get time zone
+						information</a></li>
+				<li id="nav-sub-formats"><a href="#formats">Check date and
+						time formats</a></li>
+				<li id="nav-sub-leapyear"><a href="#leapyear">Check for
+						leap year</a></li>
+				<li id="nav-sub-convert"><a href="#conversion">Time
+						conversion</a></li>
+				<li id="nav-sub-measure"><a href="#measure">Calculate
+						difference in time</a></li>
+				<li id="nav-sub-dst"><a href="#dst">Check whether daylight
+						saving enabled</a></li>
+				<li id="nav-sub-change"><a href="#change">Change time
+						duration</a></li>
+				<li id="nav-sub-compare"><a href="#compare">Compare time</a></li>
+			</ul>
+		</nav>
+		<div id="prereq">
+			<article>
+				<h2>Prerequisites</h2>
+				<section>
+					<p class="desc">
+						The
+						<code>Time</code>
+						API has different levels of access to handle system and sensitive
+						data. You can enable different permissions for the
+						<code>Time</code>
+						API in the
+						<code>config.xml</code>
+						file.
+					</p>
+
+					<ul id="refprereq" class="contentlist">
+						<li class=" ">http://tizen.org/api/time: Privilege to allow
+							access to all features of the <code>Time</code> API
+						</li>
+						<li class=" ">http://tizen.org/api/time.read: Privilege to
+							allow access to the get current time, date, time zone, time and
+							date formats</li>
+						<li class=" ">http://tizen.org/api/time.write: Privilege to
+							allow access to set the date and time</li>
+					</ul>
+				</section>
+			</article>
+		</div>
+		<div>
+			<a href="#TOP" id="top">Top</a>
+			<article>
+				<h2 id="getdatetime">Get current date and time</h2>
+				<section>
+					<p class="desc">
+						The
+						<code>Time</Code>
+						API provides the
+						<code>TimeUtil</code>
+						interface which allows you to work with current system date and
+						current system time.
+					</p>
+					<p class="desc">You can get and set the current system date and
+						time.</p>
+					<ul>
+						<li>
+							<h3>Get Current Date and Time</h3>
+						</li>
+					</ul>
+					<p class="desc">
+						The
+						<code>TimeUtil.getCurrentDateTime</code>
+						method retrieves the current system date and time. This method
+						returns a
+						<code>TZDate</code>
+						object.
+					</p>
+
+					<div class="confbox programlisting">
+						<div class="content">
+							<pre xml:space="preserve">
+							<code>
+// Retrieves the current system date time and writes to console.
+var current_dt = tizen.time.getCurrentDateTime();
+console.log ("current date / time is " + current_dt.toLocaleString());</code>
+					</pre>
+						</div>
+					</div>
+
+					<div class="info">In addition, you can use access functions
+						like tizen.time.TZDate.getFullYear(),
+						tizen.time.TZDate.getMonth(),.. to retrieve the information of
+						individual fields year, month,etc .</div>
+				</section>
+			</article>
+		</div>
+
+		<div id="setdatetime">
+			<a href="#body-main" id="top">Top</a>
+			<article>
+				<h2>Create and set new date and time</h2>
+				<section>
+					<p class="desc">
+						Create an instance of the
+						<code>Time</code>
+						interface by passing the date, time and time zone values to the
+						<code>new tizen.TZDate()</code>
+						method.
+					</p>
+					<div class="programlisting">
+						<div class="content">
+							<pre xml:space="preserve">
+							<code>
+// Creates a time interface instance with the given values
+var newDT = new tizen.TZDate(2012, 9, 22, 2, 25, 23, 200, );
+console.log ("date / time is " + newDT.toLocaleString());</code>
+					</pre>
+						</div>
+					</div>
+					<ul>
+						<li>
+							<h3>Set Current Date and Time</h3>
+						</li>
+					</ul>
+					<p class="desc">
+						The
+						<code>TimeUtil.setCurrentDateTime</code>
+						method is used to set the current system date and time. This
+						method gets a
+						<code>TZDate</code>
+						object as a parameter.
+					</p>
+
+					<div class="confbox programlisting">
+						<div class="content">
+							<pre xml:space="preserve">
+							<code>
+// Sets the current system date time
+if (newDT!= null) {
+    tizen.time.setCurrentDateTime(newDT);
+}
+console.log ("date / time is " + newDT.toLocaleString());</code>
+					</pre>
+						</div>
+					</div>
+					<div class="info">
+						In addition, you can use methods like
+						<code>tizen.time.TZDate.setFullYear(),
+							tizen.time.TZDate.setMonth(), tizen.time.TZDate.setHours(),
+							tizen.time.TZDate.setMinutes()</code>
+						.. to set the values for individual fields year, month, hours,
+						minutes, etc .
+					</div>
+					<p class="desc">
+						The following table shows the parameter for the
+						<code>TZDate</code>
+						interface constructor.
+					</p>
+
+					<div class="tablewrap">
+						<table>
+							<thead class=" " />
+							<tfoot class=" " />
+							<tbody class=" ">
+								<tr>
+									<td colspan="1" rowspan="1">
+										<p class="desc">
+											<strong class=" ">Parameter</strong>
+										</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">
+											<strong class=" ">Format</strong>
+										</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">
+											<strong class=" ">Example</strong>
+										</p>
+									</td>
+								</tr>
+								<tr>
+									<td colspan="1" rowspan="1">
+										<p class="desc">year</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">YYYY (4-digit year)</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">2011</p>
+									</td>
+								</tr>
+								<tr>
+									<td colspan="1" rowspan="1">
+										<p class="desc">month</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">MM (2-digit month)</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">11</p>
+									</td>
+								</tr>
+								<tr>
+									<td colspan="1" rowspan="1">
+										<p class="desc">day</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">DD (2-digit day of month)</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">10</p>
+									</td>
+								</tr>
+								<tr>
+									<td colspan="1" rowspan="1">
+										<p class="desc">hours</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">hh (2 digits of hours)</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">3 (or 03)</p>
+									</td>
+								</tr>
+								<tr>
+									<td colspan="1" rowspan="1">
+										<p class="desc">minutes</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">mm (2 digits of minutes)</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">45</p>
+									</td>
+								</tr>
+								<tr>
+									<td colspan="1" rowspan="1">
+										<p class="desc">seconds</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">ss (2 digits of seconds)</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">4 (or 04)</p>
+									</td>
+								</tr>
+								<tr>
+									<td colspan="1" rowspan="1">
+										<p class="desc">milliseconds</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">(3 digits of milliseconds)</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">999</p>
+									</td>
+								</tr>
+								<tr>
+									<td colspan="1" rowspan="1">
+										<p class="desc">timezone</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">specific descriptor 1/specific descriptor
+											2/specific descriptor n(string)</p>
+									</td>
+									<td colspan="1" rowspan="1">
+										<p class="desc">America/Argentina/Buenos_Aires</p>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="info">
+						Other than the day parameter, which begins from 1, all parameters
+						of the
+						<code>TZDate</code>
+						constructor begin from 0. This implies that, for the months of a
+						year, the value for January is 0, for February, it is 1, and for
+						December, it is 11. Therefore it may be convenient to add 1 to the
+						returned value of
+						<code>tizen.time.TZDate.getMonth()</code>
+						method.
+					</div>
+				</section>
+			</article>
+		</div>
+
+		<div id="timezone">
+			<a href="#body-main" id="top">Top</a>
+			<article>
+				<h2>Get time zone information</h2>
+				<section>
+					<ul>
+						<li><h3>Get Local time zone</h3></li>
+					</ul>
+					<p class="desc">
+						The
+						<code>TimeUtil.getLocalTimeZone</code>
+						method is used to get the local time zone. This method returns
+						time zone as a string.
+					</p>
+					<div class="programlisting">
+						<div class="content">
+							<pre>
+							<code>
+// Sets the system date and time to Sep 22, 2012 and 01:32:46
+var newTZ = tizen.time.getLocalTimezone();
+console.log ("Local time zone is " + newTZ);</code>
+					</pre>
+						</div>
+					</div>
+					<ul class="contentlist">
+						<li>
+							<h3>Get available time zones</h3>
+						</li>
+					</ul>
+					<p class="desc">
+						A list of available time zones can be obtained using the
+						<code>tizen.time.getAvailableTimezones()</code>
+						method
+					</p>
+					<div class="programlisting">
+						<div class="content">
+							<pre>
+							<code>
+// Gets the list of available time zones and prints the number to console
+var tzList = tizen.time.getAvailableTimezones();
+console.log ("The device supports  " + tzList.length + "time zones");</code>
+					</pre>
+						</div>
+					</div>
+					<ul>
+						<li>
+							<h3>Get time zone abbrevation</h3>
+						</li>
+					</ul>
+					<p class="desc">
+						The
+						<code>TZDate.getTimezoneAbbreviation()</code>
+						method determines the time zone abbreviation to be used at a
+						particular date in the time zone.
+					</p>
+					<div class="programlisting">
+						<div class="content">
+							<pre>
+							<code>
+// Gets abbrevation of the time zone
+var current_dt = tizen.time.getCurrentDateTime();
+var tzAbbr = current_dt.getTimezoneAbbreviation();
+console.log ("Time zone abbrevation " + tzAbbr);</code>
+					</pre>
+						</div>
+					</div>
+
+				</section>
+			</article>
+		</div>
+
+		<div id="formats">
+			<a href="#body-main" id="top">Top</a>
+			<article>
+				<h2>Check date and time formats</h2>
+				<section>
+					<p class="desc">
+						The
+						<code>TimeUtil</code>
+						interface provides methods for getting the format of the date and
+						time.
+					</p>
+				</section>
+				<ul>
+					<li>
+						<h3>Get Time Format</h3>
+					</li>
+				</ul>
+				<section>
+					<p class="desc">
+						You can get the system's local time format using the
+						<code>tizen.time.getTimeFormat()</code>
+						method. Returns a string. For example, you can get "h:m:s ap",
+						where h denotes hours (0 to 23 or 1 to 12 if AM/PM display), m
+						denotes minutes (0 to 59), s denotes seconds (0 to 59) and ap
+						stands for AM/PM display format.
+					</p>
+					<div class="confbox programlisting">
+						<div class="content">
+							<pre xml:space="preserve">
+							<code>
+// Gets the system's local time format and prints to console
+var timeFormat = tizen.time.getTimeFormat();
+console.log ("System's local time format " + timeFormat);;</code>
+					</pre>
+						</div>
+					</div>
+					<div class="info">Many time formats are supported in Tizen
+						which include hh:mm:ss (for example, 16:08:27), and hh:mm:ss ap
+						(for example, 04:08:27 PM)</div>
+				</section>
+				<ul>
+					<li>
+						<h3>Get Date Format</h3>
+					</li>
+				</ul>
+				<section>
+					<p class="desc">
+						You can get the system's local date format using the
+						<code>tizen.time.getDateFormat()</code>
+						method. Returns a string. For example, you can get string "d/m/y",
+						where d stands for day, m stands for month and y denotes year.
+					</p>
+					<div class="confbox programlisting">
+						<div class="content">
+							<pre xml:space="preserve">
+							<code>
+// Gets the system's local date format and prints to console
+var dateFormat = tizen.time.getDateFormat();
+console.log ("System's local date format " + dateFormat);</code>
+					</pre>
+						</div>
+					</div>
+					<div class="info">Many date formats are supported in Tizen
+						which include DD/MM/YYYY (for example, 23/10/1996), YYYY-DD-MM
+						(for example, 1996-23-10), and hybrid formats (for example,
+						Wednesday, October 23, 1996.)</div>
+				</section>
+			</article>
+		</div>
+
+		<div id="leapyear">
+			<a href="#body-main" id="top">Top</a>
+			<article>
+				<h2>Check for leap year</h2>
+				<section>
+					<p class="desc">A leap year is a year containing one extra day
+						in order to keep the calendar year synchronized with the
+						astronomical or seasonal year. In each leap year, the month of
+						February has 29 days instead of 28.</p>
+					<p class="desc">If you are creating a calendar-based
+						application or accepting a birth date on an application form, you
+						must validate user input for a leap year date value. For example,
+						29/02/2011 is invalid user input.</p>
+					<p class="desc">
+						The
+						<code>TimeUtil.isLeapYear</code>
+						method is used to check whether the given year is a leap year.
+						This method takes the year input in the YYYY format.
+					</p>
+					<div class="confbox programlisting">
+						<div class="content">
+							<pre xml:space="preserve">
+							<code>
+var current_dt = tizen.time.getCurrentDateTime();
+var is_leap = tizen.time.isLeapYear(current_dt.getFullYear());
+if (is_leap)
+   console.log("This year is a leap year.");</code>
+					</pre>
+						</div>
+					</div>
+					<div class="info">
+						In JavaScript, the Date object does not have a mechanism to check
+						for a leap year. So, you must perform mathematical calculations to
+						achieve this. By using the Tizen
+						<code>TZDate</code>
+						object, you only need to call the
+						<code>isLeapYear</code>
+						method to check for a leap year.
+					</div>
+				</section>
+			</article>
+		</div>
+
+		<div id="conversion">
+			<a href="#body-main" id="top">Top</a>
+			<article>
+				<h2>Time conversion</h2>
+				<section>
+					<p class="desc">
+						The
+						<code>Time</code>
+						API’s
+						<code>TimeDuration</code>
+						interface provides methods to convert time to local or specified
+						time zone and to UTC standard time.
+					</p>
+					<div class="confbox programlisting">
+						<div class="content">
+							<pre xml:space="preserve">
+							<code>
+var now = tizen.time.getCurrentDateTime();
+var newtz = now.toTimezone();
+var str = newtz.getTimezone();
+console.log("Converted time zone " + str);
+newtz = date.toLocalTimezone();
+str = newtz.getTimezone();
+console.log("Local time zone " + str);
+var tzUTC = newtz.toUTC();
+console.log("UTC standard time " + tzUTC.toLocaleString());
+</code>
+					</pre>
+						</div>
+					</div>
+				</section>
+			</article>
+		</div>
+		<div id="measure">
+			<a href="#body-main" id="top">Top</a>
+			<article>
+				<h2>Calculate difference in time</h2>
+				<section>
+					<p class="desc">
+						The
+						<code>Time</code>
+						API’s
+						<code>TimeDuration</code>
+						interface provides the difference method to calculate the
+						difference between two date or time events without having to
+						bother about the difference in the event units.
+						<code>TimeDuration.difference</code>
+						method accepts another
+						<code>TimeDuration</code>
+						object and performs a
+						<code> (this object – parameter object)</code>
+						operation, and returns a TimeDuration object.
+					</p>
+					<div class="confbox programlisting">
+						<div class="content">
+							<pre xml:space="preserve">
+							<code>
+// Compute event1.duration - event2.duration
+var diff = event1.duration.difference(event2.duration);
+if (diff.length &#62; 0)
+   console.log("Event1 is longer than Event2");
+else if (diff.length &#61; 0)
+   console.log("Event1 is as long as Event2");
+else
+   console.log("Event1 is shorter than Event2");</code>
+					</pre>
+						</div>
+					</div>
+					<div class="info">
+						The unit of the returned
+						<code>TimeDuration</code>
+						object is equivalent to the largest possible unit amongst the
+						source parameter units while making sure that precision is not
+						lost in the result. This implies that if, for example, when the
+						comparison is made between "1 hour" and "20 minutes", the result
+						of the difference are displayed as 40 minutes, not 0.67 hour.
+						Although the hour unit is bigger than the minute unit, the result
+						is more precise if presented in minutes.
+					</div>
+				</section>
+			</article>
+		</div>
+
+		<div id="dst">
+			<a href="#body-main" id="top">Top</a>
+			<article>
+				<h2>Check whether daylight saving time enabled</h2>
+				<section>
+					<p class="desc">Daylight saving time, also known as Summer time
+						is used to make better use of daylight</p>
+					<p class="desc">
+						The
+						<code>TzDate.isDST</code>
+						method is used to check if DST has been enabled for the current
+						time zone
+					</p>
+					<div class="confbox programlisting">
+						<div class="content">
+							<pre xml:space="preserve">
+							<code>
+var current_dt = tizen.time.getCurrentDateTime();
+var is_DST = current_dt.isDST;
+if (is_DST)
+   console.log("Day light saving is enabled");</code>
+					</pre>
+						</div>
+					</div>
+					<ul>
+						<li>
+							<h3>Get previous DST transition</h3>
+						</li>
+					</ul>
+					<p class="desc">Returns the date of the previous daylight
+						saving time transition for the timezone.</p>
+					<div class="programlisting">
+						<div class="content">
+							<pre>
+							<code>
+var now = tizen.time.getCurrentDateTime();
+var tzDT = now.getPreviousDSTTransition();
+</code>
+					</pre>
+						</div>
+					</div>
+					<ul>
+						<li>
+							<h3>Get Next DST transition</h3>
+						</li>
+					</ul>
+					<p class="desc">Returns the date of the next daylight saving
+						time transition for the timezone.</p>
+					<div class="programlisting">
+						<div class="content">
+							<pre>
+							<code>
+var now = tizen.time.getCurrentDateTime();
+var tzDT = now.getNextDSTTransition();
+</code>
+					</pre>
+						</div>
+					</div>
+					<div class="info">DST (or summer time) is the practice of
+						clocks being advanced temporarily by a fixed time during the
+						summer to take advantage of more daylight. Typically, this
+						temporary adjustment is one hour. For example, one hour shift
+						ahead in time will cause the last moment of 20:59 to jump to 22:00
+						instead of 21:00. In this case, the day will have 23 hours. In
+						another scenario, one hour shift back in time will cause the day
+						to have 25 hours</div>
+				</section>
+			</article>
+		</div>
+
+		<div id="change">
+			<a href="#body-main" id="top">Top</a>
+			<article>
+				<h2>Change time duration</h2>
+				<section>
+					<p class="desc">
+						You can use the
+						<code>tizen.time.TZDate.addDuration()</code>
+						method to add the specified number of seconds to the current time
+						or the specified number of days to the current date; the duration
+						is of type
+						<code>TimeDuration</code>
+					</p>
+					<div class="confbox programlisting">
+						<div class="content">
+							<pre xml:space="preserve">
+							<code>
+// a journey in time
+var now = tizen.time.getCurrentDateTime();
+var newDT = now.addDuration(new tizen.TimeDuration(5, "DAYS"));
+</code>
+					</pre>
+						</div>
+					</div>
+				</section>
+				<section></section>
+			</article>
+		</div>
+
+		<div id="compare">
+			<a href="#body-main" id="top">Top</a>
+			<article>
+				<h2>Compare time</h2>
+				<section>
+					<p class="desc">
+						There are three methods for convenient time comparison:
+						<code>tizen.time.TZDate.equalsTo(),
+							tizen.time.TZDate.earlierThan()</code>
+						and
+						<code>tizen.time.TZDate.laterThan()</code>
+						. Each of them should be applied to a
+						<code>TZDateobject</code>
+						and each of them returns a boolean value.
+					</p>
+					<div class="confbox programlisting">
+						<div class="content">
+							<pre xml:space="preserve">
+							<code>
+if(newDT.equalsTo(myGetCurrentDateTime.currentDT) == false) {
+    // changed
+    if(newDT.earlierThan(myGetCurrentDateTime.currentDT) == true ) {
+        // earlier - time has stepped back!
+    }
+    if(newDT.laterThan(myGetCurrentDateTime.currentDT) == true ) {
+        // later - time has elapsed.
+    }
+} else {
+    // the same time!
+}</code>
+					</pre>
+						</div>
+					</div>
+				</section>
+			</article>
+		</div>
+
+		<footer>&copy; 2012 Intel Co., Ltd. All rights reserved.</footer>
+	</div>
+</body>
+</html>
